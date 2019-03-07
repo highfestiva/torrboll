@@ -1,0 +1,32 @@
+<html>
+<head>
+  <title>Backup Status</title>
+  <style>
+    .r {
+      background-color: #ff0000;
+    }
+    .g {
+      background-color: #00ff00;
+    }
+  </style>
+</head>
+<body>
+  {% for service,group in data %}
+    <h2>{{service}}</h2>
+    <table>
+    <tr><th>Client</th><th>System</th><th>Job</th>
+    {% for timestamp,_ in group[0][-1] %}
+      <th>{{timestamp}}</th>
+    {% endfor %}
+    </tr>
+    {% for client,system,job,res in group %}
+      <tr><td>{{client}}</td><td>{{system}}</td><td>{{job}}</td>
+      {% for _,ok in res %}
+        <td class="{{'g' if ok else 'r'}}"> </td>
+      {% endfor %}
+      </tr>
+    {% endfor %}
+    </table>
+  {% endfor %}
+</body>
+<html>
