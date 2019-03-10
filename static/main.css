@@ -1,0 +1,18 @@
+html, body {
+	font-size: 9px;
+}
+h2 {
+	margin-top: 2em;
+}
+th {
+	text-align: left;
+}
+th:nth-of-type(-n+3) {
+	min-width: 15em;
+}
+.r {
+	background-color: #ff0000;
+}
+.g {
+	background-color: #00ff00;
+}

@@ -15,6 +15,7 @@ import quopri
 import sqlite3
 import threading
 import time
+import traceback
 
 
 app = Flask(__name__)
@@ -60,8 +61,8 @@ def imap_disconnect(imap_conn):
 def split_subject(subject):
     splitstr = '-' if subject.count('-')==2 else ' - '
     words = [e.strip() for e in subject.split(splitstr)]
-    if len(words) == 3:
-        job,client,our_company = words
+    if len(words) >= 3:
+        job,client,our_company = words[:3]
     else:
         job,client = words
         our_company = 'Björk IT'
@@ -163,8 +164,8 @@ def parse_all(imap_conn):
     _,mail_results = imap_conn.search(None, 'ALL')
     msg_ids = mail_results[0].split()
     for i,msgid in enumerate(msg_ids):
-        # try:
-        if True:
+        subject = timestamp = ''
+        try:
             _,data = imap_conn.fetch(msgid, '(RFC822)')
             msg = BytesParser(policy=policy.default).parsebytes(data[0][1])
             subject = msg['Subject']
@@ -197,8 +198,9 @@ def parse_all(imap_conn):
             if 'quoted-printable' in mime:
                 html = quopri.decodestring(html)
             catalogue_mail(cursor=cursor, subject=subject, timestamp=timestamp, html=html)
-        # except:
-            # pass
+        except:
+            print('ERROR MSGID, SUBJECT & TIMESTAMP:', msgid, subject, timestamp)
+            traceback.print_exc()
     cursor.execute('COMMIT')
     print('All e-mails catalogued.')
 
@@ -231,12 +233,12 @@ def latest_status():
     cache = {}
     for service,dfs in df.groupby('SERVICE'):
         data += [[service, []]]
-        for timestamp,dft in dfs.groupby('TIMESTAMP'):
+        dft = pd.pivot_table(dfs, values='PERC', index=['CLIENT','SYSTEM','JOB'], columns='TIMESTAMP')
+        for timestamp in dft.columns:
             ts = str(timestamp).split(' ')[0]
             if not ts.endswith('01'):
                 ts = ts.split('-')[-1]
-            dft = dft.sort_values(by=['CLIENT','SYSTEM'])
-            for (client,system,job),dfg in dft.groupby(['CLIENT','SYSTEM','JOB']):
+            for client,system,job in dft.index:
                 if (service,client,system,job) not in cache:
                     l = cache[(service,client,system,job)] = []
                     data[-1][-1].append((client,system,job, l))
@@ -245,10 +247,8 @@ def latest_status():
                 # print(client,system,job)
                 # print(dfg)
                 ok = False
-                for perc in dfg['PERC']:
-                    ok = perc==100
-                    if not ok:
-                        break
+                perc = dft.loc[(client,system,job), timestamp]
+                ok = perc==100
                 l.append((ts,ok))
         # data[-1][-1] = sorted(data[-1][-1])
     # import pprint
