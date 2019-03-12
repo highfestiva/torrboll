@@ -8,14 +8,23 @@
   {% for service,group in data %}
     <h2>{{service}}</h2>
     <table>
-    <tr><th>Client</th><th>System</th><th>Job</th>
-    {% for timestamp,_ in group[0][-1] %}
-      <th>{{timestamp}}</th>
+    <tr><th></th><th></th><th></th>
+    {% for month,day,_ in group[0][-1] %}
+      {% if month %}
+        <th colspan="3" class="month">{{month}}</th>
+      {% else %}
+        <th></th>
+      {% endif %}
+    {% endfor %}
+    </tr>
+    <tr><th class="title">Client</th><th class="title">System</th><th class="title">Job</th>
+    {% for month,day,_ in group[0][-1] %}
+      <th>{{day}}</th>
     {% endfor %}
     </tr>
     {% for client,system,job,res in group %}
       <tr><td>{{client}}</td><td>{{system}}</td><td>{{job}}</td>
-      {% for _,ok in res %}
+      {% for _,_,ok in res %}
         <td class="{{'g' if ok else 'r'}}"> </td>
       {% endfor %}
       </tr>

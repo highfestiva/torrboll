@@ -1,14 +1,20 @@
 html, body {
 	font-size: 9px;
+	font-family: 'Segoe UI', Arial;
 }
 h2 {
-	margin-top: 2em;
+	margin-top: 3em;
 }
 th {
 	text-align: left;
+	font-weight: normal;
 }
-th:nth-of-type(-n+3) {
+th.title {
 	min-width: 15em;
+	font-weight: bold;
+}
+th.month {
+	font-weight: bold;
 }
 .r {
 	background-color: #ff0000;
